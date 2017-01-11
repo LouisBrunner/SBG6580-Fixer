@@ -1,5 +1,7 @@
 # SBG6580 Fixer
 
+[Try it here!](https://LouisBrunner.github.io/SBG6580-Fixer)
+
 If you own (or lease) a Motorola SGB6580 modem, you may have experienced some difficulty with the Wi-Fi settings.
 I got mine from Time Warner Cable and I can't say it has been a real pleasure to use it.
 
