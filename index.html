@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fix SBG6580 Wifi Issues</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+    body {
+        padding: 20px;
+        background-color: rgb(240, 240, 240);
+    }
+
+    .start-hidden {
+        display:none;
+    }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="alert alert-success start-hidden" role="alert" id="fix-display">
+            <strong>Fixed!</strong> You can now try to reconnect
+        </div>
+        <div class="alert alert-info start-hidden" role="alert" id="fix-progress">
+            Processing in progress
+        </div>
+        <div class="alert alert-danger start-hidden" role="alert" id="fix-error">
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form id="fix-form" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="inputURL" class="col-sm-2 control-label">Gateway</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputURL" placeholder="http://192.168.0.1" value="http://192.168.0.1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGUser" class="col-sm-2 control-label">Gateway username</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputGUser" placeholder="admin" value="admin">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGPassword" class="col-sm-2 control-label">Gateway password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputGPassword" placeholder="motorola" value="motorola">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label for="inputSSID" class="col-sm-2 control-label">SSID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inputSSID" placeholder="ThanksTWC">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputPassword" placeholder="53cr37P455w0rd0f7h3D34d">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" id="inputShow"> <label for="inputShow">Show password</label>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-primary btn-lg">Fix SBG6580 Wifi Issues</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+    // MIT License, Copyright (c) 2015 Louis Brunner
+
+    function setFromStorage(key, name) {
+        var str = localStorage.getItem(key);
+
+        if (str != null) {
+            $(name).val(str);
+        }
+    }
+
+    function displayError() {
+        $("#fix-progress").hide(200);
+        $("#fix-display").hide(200);
+        $("#fix-error").show(200);
+    }
+
+    function displaySuccess() {
+        $("#fix-progress").hide(200);
+        $("#fix-error").hide(200);
+        $("#fix-display").show(200);
+    }
+
+    $(document).ready(function() {
+
+        setFromStorage("GatewayURL", "#inputURL");
+        setFromStorage("GatewayUser", "#inputGUser");
+        setFromStorage("GatewayPassword", "#inputGPassword");
+        setFromStorage("SSID", "#inputSSID");
+        setFromStorage("Password", "#inputPassword");
+
+        $("#inputShow").change(function(event){
+            $("#inputPassword").attr("type", $("#inputShow").prop("checked") ? "text" : "password");
+        });
+
+        $("#fix-form").submit(function(){
+            var baseURL = $("#inputURL").val();
+            var gateUser = $("#inputGUser").val();
+            var gatePassword = $("#inputGPassword").val();
+            var wifiSSID = $("#inputSSID").val();
+            var wifiPassword = $("#inputPassword").val();
+
+            var args0 = {"loginUsername":gateUser,"loginPassword":gatePassword};
+            var args1 = {"OutputPower":"100","Band":"2","NMode":"2","NBandwidth":"20","NSideband":"0","ChannelNumber":"0","restoreWirelessDefaults":"1","commitwlanRadio":"1","scanActions":"0","SelectedRadio":"0"};
+            var args2 = {"PrimaryRadio":"0","WepEncryption":"0","WpaPskAuth":"0","Wpa2PskAuth":"1","WpaAuth":"0","Wpa2Auth":"0","AutoSecurity":"1","WpaEncryption":"2","WpaPreSharedKey":wifiPassword,"ClosedNetwork":"0","PrimaryNetworkEnable":"1","ServiceSetIdentifier":wifiSSID,"GenerateWepKeys":"0","WepKeysGenerated":"0","commitwlanPrimaryNetwork":"1","cfgAction":"0","GenerateWpsPin":"0","wpsActions":"0","WpsStaPin":""};
+
+            localStorage.setItem("GatewayURL", baseURL);
+            localStorage.setItem("GatewayUser", gateUser);
+            localStorage.setItem("GatewayPassword", gatePassword);
+            localStorage.setItem("SSID", wifiSSID);
+            localStorage.setItem("Password", wifiPassword);
+
+            $("#fix-error").hide(200);
+            $("#fix-error").html("<strong>Error!</strong> Check you gateway address");
+            $("#fix-display").hide(200);
+            $("#fix-progress").show(200);
+
+            $.post(baseURL + "/goform/login", args0, function(data) {
+                $.post(baseURL + "/goform/wlanRadio.pl", args1, function(data) {
+                    $.post(baseURL + "/goform/wlanPrimaryNetwork.pl", args2, displaySuccess).fail(displayError);
+                }).fail(displayError);
+            }).fail(function() {
+                $("#fix-error").html("<strong>Error!</strong> Check you gateway address (meanwhile we are trying another way)");
+                displayError();
+
+                $.post(baseURL + "/goform/login", args0).always(function(data) {
+                    $.post(baseURL + "/goform/wlanRadio.pl", args1).always(function(data) {
+                        $.post(baseURL + "/goform/wlanPrimaryNetwork.pl", args2).always(displaySuccess);
+                    });
+                });
+            });
+
+            return false;
+        });
+    });
+    </script>
+</body>
+</html>
